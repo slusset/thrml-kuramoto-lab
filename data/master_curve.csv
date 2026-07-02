@@ -1,0 +1,9 @@
+bj,topology,placement,n_watch,h_c
+0.08,ring,random,300,0.0
+0.1,ring,random,300,0.04
+0.125,ring,random,300,0.02
+0.15,ring,random,300,0.02
+0.175,ring,random,300,0.03
+0.2,ring,random,300,0.03
+0.25,ring,random,300,0.04
+0.3,ring,random,300,0.08

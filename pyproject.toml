@@ -1,0 +1,21 @@
+[project]
+name = "thrml-kuramoto-lab"
+version = "0.1.0"
+description = "Carrier-fraction percolation experiment re-expressed as a clamped PGM in THRML (JAX block Gibbs)."
+requires-python = ">=3.10"
+dependencies = [
+    "thrml",
+    "jax",
+    "numpy",
+    "matplotlib",
+]
+
+[project.optional-dependencies]
+notebook = ["jupyterlab", "ipykernel"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/carrier_pgm"]
