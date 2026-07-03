@@ -354,8 +354,41 @@ survives with error bars:
 - **Hopfield (H5)** — degree recall 0.95±0.02 at 16% with r_mag
   0.04±0.03; r_struct tracks fid within ~0.01 in every cell. One new
   wrinkle: random-placement recall plateaus (~0.66 from 10% to 16%) —
-  possibly stuck partial-recall domains; worth a look before the
-  multi-pattern step.
+  resolved below.
+
+**The random-placement "plateau", dissected (`run_plateau.py`).** Four
+probes, scale-free at the calibrated T:
+
+1. *Gauge check.* Hopfield/random and ferromagnet/random at equal
+   fraction and seed are statistically identical (as the gauge
+   transform `σ_i = s_i·t_i` demands) — pattern interference is ruled
+   out by construction. The plateau is a fact about random placement,
+   not about memory.
+2. *Dense grid, 10 seeds.* Not a true plateau — a slow climb with a
+   soft shoulder: 0.63 → 0.69 → 0.70 → 0.79 → 0.81 across 8–24%
+   (degree reference: 0.86 → 0.99). The 5-seed "0.67 → 0.65" was noise
+   sitting on the shoulder.
+3. *Horizon test.* fid at burn 40/160/640: 0.69/0.73/0.70 — flat.
+   **Not kinetic.** Unlike the metastable-flip regime (where every
+   threshold was a race), the shortfall here is an equilibrium
+   property; waiting doesn't help.
+4. *Domain anatomy.* The unrecalled mass is not a stuck domain: ~30
+   wrong free nodes scatter into 13–24 clusters of size mostly 1–5.
+   Wrong nodes have lower degree (≈4.0 vs 6.6) and sit farther from
+   the nearest carrier (≈2.0 vs 1.4 hops) than right nodes.
+
+So the honest name for it is an **influence-radius / coverage law**:
+just above Tc the field is paramagnetic on its own, and a free node
+holds the target only insofar as clamp influence reaches it (finite
+correlation length). Random carriers — mostly low-degree, because most
+nodes are — each cover a small ball, and new ones increasingly land in
+already-covered territory; the residue is flickering low-degree
+periphery at distance ≥2 from every carrier. Hub placement wins
+because hubs put most of the graph within ~1 hop of a carrier:
+coverage per carrier is maximal. Design-rule phrasing: **in the
+steerable regime, intent has a finite influence radius — placement is
+a covering problem, and heavy-tailed graphs let a few hubs cover
+almost everything.**
 
 Next rung: multiple stored patterns (interference/capacity), then
 THRML's `IsingTrainingSpec` to learn the couplings instead of writing
