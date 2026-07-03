@@ -533,13 +533,43 @@ economics are set by state-space granularity* (coarse states trap;
 fine states rotate). For a mesh that must remain redirectable, the
 one-way-door price depends on how finely its members can disagree.
 
+**Potts covenants (H8b, `run_capacity_q.py`, 3 seeds).** The capacity
+counterweight to H9: upgrade each edge from one signed bit to a full
+q×q preference table (centered Potts-Hebb, Kanter's rule) and rerun
+the H6 protocol — per-q Tc calibration at P=1, then capacity at
+1.15·Tc(q), 10% degree carriers, chance-corrected overlap
+`m = (q·match−1)/(q−1)` (q=2 ⇒ Ising fid; knee ≈ H6's within protocol
+noise — gate passed).
+
+| q | knee P₀.₇ | m_cued at P=8 | dense-theory ratio q(q−1)/2 |
+|---|---|---|---|
+| 2 | 1 | 0.37 | 1× |
+| 4 | 5 | 0.59 | 6× |
+| 8 | 8–16 (0.66 at P=16) | 0.76 | 28× |
+
+**H8b confirmed in direction: the wall recedes strongly with covenant
+richness** — ~5× at q=4 (matching the dense-theory 6× almost exactly),
+~8–14× at q=8. At every P, richer covenants recall better at the same
+carrier budget, and cross-talk stays low (m_other ≤ 0.16 — no
+wrong-memory takeover; the H6 mixture-collapse is pushed out, not
+transformed). The honest asterisk: q=8 undershoots the quadratic law
+(8–14× vs 28×) — at N=196 with ⟨k⟩≈6 the sparse substrate still owns
+part of the wall, so the clean claim is *super-linear growth with q,
+quadratic unresolved at this size*. Finite-size scaling would settle
+the exponent.
+
+So the granularity currency buys both freedoms after all: **freedom to
+move** (H9 — fine phases rotate out of traps) and **freedom to hold
+multiplicity** (H8b — q×q covenants store many intents before
+interfering), and the two arrive together as q grows past ~4–8.
+
 Where this leaves the lab: the design rules are closed for this model
-class (placement = covering — q-invariant; capacity = substrate;
-re-steering = granularity; monitor = covenant-satisfaction below
-capacity). Open doors: Potts capacity (H8b: does recall capacity grow
-~q² with richer covenants?), denser webs / higher-order factors, and
-the THRML-hardware questions — annealed β and the real DTM denoising
-chain behind the section-5 proxy.
+class (placement = covering — q-invariant; re-steering = granularity;
+capacity = substrate × covenant-richness; monitor =
+covenant-satisfaction below capacity). Open doors: finite-size scaling
+of the H8b exponent, denser webs / higher-order factors, and the
+THRML-hardware questions — annealed β and the real DTM denoising chain
+behind the section-5 proxy.
 
 ## Where to take it next
 

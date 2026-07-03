@@ -571,6 +571,91 @@ def kinetic_flip(G, q, frac, strategy="random", J=1.0, ratio=2.0, T=1.0,
     return float(np.cos(theta).mean())
 
 # %% [markdown]
+# ### 9p. Potts covenants — does the capacity wall recede as q grows? (H8b)
+#
+# H6 hit the wall with one-bit covenants: `J_ij = Σ_μ t_i·t_j`, where a second
+# stored intent immediately contradicts the first on ~half the edges. The
+# Potts upgrade gives each edge a full **q×q preference table** (centered
+# Hebb, Kanter 1988):
+#
+#     W_ij[a,b] = Σ_μ (δ(a,t^μ_i) − 1/q)·(δ(b,t^μ_j) − 1/q)
+#
+# — "when you hold a, I prefer b," specified for every pair. More cells to
+# write in ⇒ stored intents collide later. Dense theory: capacity grows
+# ~q(q−1)/2. At q=2 this is the Ising Hebb (scaled by 1/4; Tc is recalibrated
+# per q so the protocol stays matched) — the H6 regression gate.
+#
+# Recall metric is the chance-corrected Potts overlap
+# `m = (q·match − 1)/(q − 1)` (random guessing ⇒ 0; q=2 ⇒ Ising fid).
+#
+# **H8b.** At matched operating points (T = 1.15·Tc(q), calibrated at P=1
+# and held fixed as P grows — the H6 protocol), the capacity knee moves to
+# higher P as q grows. *Falsified if* the knee is q-flat (repertoire doesn't
+# survive sparseness) — then granularity buys freedom to move (H9) but NOT
+# freedom to hold multiplicity, and the charter conjecture dies here.
+
+# %%
+def potts_hebb_weights(G, patterns, q):
+    """Centered Potts-Hebb: per-edge q×q tables. Returns {(i,j): W_ij}."""
+    P, N = patterns.shape
+    onehot = np.zeros((P, N, q))
+    for mu in range(P):
+        onehot[mu, np.arange(N), patterns[mu]] = 1.0
+    onehot -= 1.0 / q
+    W = {}
+    for i, j in G.edges():
+        W[(i, j)] = np.einsum("pa,pb->ab", onehot[:, i], onehot[:, j])
+    return W
+
+
+def potts_sweep(s, nbrs, clamp_mask, free_idx, q, B, T, n_sweeps):
+    """Heat-bath for per-edge q×q coupling tables.
+
+    nbrs[i] = list of (j, M) where M[a, b] is the energy gain of (s_i=a,
+    s_j=b) — M is W_ij oriented so axis 0 is node i's state.
+    """
+    s = s.copy()
+    for _ in range(n_sweeps):
+        order = rng.permutation(free_idx)
+        for i in order:
+            h = np.zeros(q)
+            for j, M in nbrs[i]:
+                h += (B if clamp_mask[j] else 1.0) * M[:, s[j]]
+            p = np.exp((h - h.max()) / max(T, 1e-9))
+            p /= p.sum()
+            s[i] = rng.choice(q, p=p)
+    return s
+
+
+def potts_overlap(s, idx, pattern, q):
+    """Chance-corrected overlap on `idx` nodes: 1 = perfect, 0 = random."""
+    match = float((s[idx] == pattern[idx]).mean())
+    return (q * match - 1.0) / (q - 1.0)
+
+
+def potts_recall(G, q, P, frac, T, strategy="degree", ratio=2.0,
+                 burn=40, record=20, pattern_seed=11):
+    """Store P patterns in q×q covenants; cue pattern 0 with clamped carriers."""
+    N = G.number_of_nodes()
+    pats = np.random.default_rng(pattern_seed).integers(0, q, size=(P, N))
+    W = potts_hebb_weights(G, pats, q)
+    nbrs = [[] for _ in range(N)]
+    for (i, j), M in W.items():
+        nbrs[i].append((j, M))
+        nbrs[j].append((i, M.T))
+    clamp_idx = place_carriers(G, frac, strategy=strategy)
+    clamp_mask = np.zeros(N, dtype=bool)
+    clamp_mask[clamp_idx] = True
+    free_idx = np.array([i for i in range(N) if not clamp_mask[i]])
+    s = rng.integers(0, q, size=N)
+    s[clamp_idx] = pats[0][clamp_idx]
+    B = ratio * T
+    s = potts_sweep(s, nbrs, clamp_mask, free_idx, q, B, T, burn + record)
+    m_cued = potts_overlap(s, free_idx, pats[0], q)
+    others = [potts_overlap(s, free_idx, pats[mu], q) for mu in range(1, P)]
+    return dict(m_cued=m_cued, m_other=max(others) if others else 0.0)
+
+# %% [markdown]
 # ## 10. Run
 # Defaults are sized to run on a laptop CPU in a couple of minutes. Scale `N`,
 # `record`, and `sweeps_per_step` up once you swap in the THRML sampler and have
