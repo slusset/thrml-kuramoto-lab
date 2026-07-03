@@ -390,9 +390,51 @@ steerable regime, intent has a finite influence radius — placement is
 a covering problem, and heavy-tailed graphs let a few hubs cover
 almost everything.**
 
-Next rung: multiple stored patterns (interference/capacity), then
-THRML's `IsingTrainingSpec` to learn the couplings instead of writing
-them.
+**Multi-pattern capacity (H6/H6b, `run_capacity.py`, 5 seeds).** Hebb
+superposition `J_ij = Σ_μ t^μ_i·t^μ_j` (unnormalized — each covenant
+laid on top of the others), cue pattern 0 with 10% carriers, scale-free
+at the calibrated T. The gauge trick does not survive superposition, so
+this is new physics for the lab. P=1 reproduces the H5 ensemble exactly
+(regression gate passed).
+
+| P | fid_cued (degree) | fid_cued (random) | r_struct obs | r_struct ceiling* |
+|---|---|---|---|---|
+| 1 | 0.94±0.03 | 0.67±0.04 | 0.94 | 1.00 |
+| 2 | 0.73±0.07 | 0.51±0.05 | 0.44 | 0.50 |
+| 3 | 0.59±0.06 | 0.46±0.08 | 0.47 | 0.49 |
+| 5 | 0.46±0.10 | 0.34±0.09 | 0.42 | 0.38 |
+| 8 | 0.38±0.10 | 0.24±0.15 | 0.36 | 0.29 |
+| 12 | 0.27±0.09 | 0.15±0.07 | 0.36 | 0.23 |
+
+*ceiling = r_struct of the PURE cued state — interference means even
+perfect recall can't satisfy every edge.
+
+- **H6 confirmed, brutally.** The knee is at P=2: a second stored
+  pattern costs ~20 points of recall. Operating capacity at fid>0.7 is
+  ~1–2 patterns — matching sparse-Hopfield theory (P_c ≈ 0.14·⟨k⟩ ≈ 1
+  at ⟨k⟩≈6). **Sparse meshes are cheap to steer but poor libraries**;
+  library size rides on degree. Placement still helps at every P
+  (degree > random throughout) but cannot rescue capacity.
+- **H6b confirmed in a form sharper than predicted.** Not only does
+  `r_struct` stay elevated while cued fidelity collapses — from P≈3 the
+  settled state satisfies MORE couplings than perfect recall would
+  (0.36 observed vs 0.23 ceiling at P=12, fid_cued 0.27). The mesh
+  serves the *tangle*, not the cued intent. And `fid_other` stays low
+  (≤0.19): it doesn't defect to another single memory, it fragments
+  into a mixture/glass state. So the covenant monitor's honest scope
+  is: **below capacity, coupling-satisfaction tracks fidelity; at
+  overload, it actively rewards the drift** — the mesh looks
+  *increasingly* well-covenanted as it loses the plot.
+- The saving nuance: overload itself is locally detectable —
+  interference shows up in the wiring (zero-weight and contested edges,
+  coupling-magnitude variance) before any recall is attempted. A node
+  can know *that* the covenant web is overloaded even though no local
+  signal can say *which* intent is being served. Structural
+  self-knowledge survives; teleological self-knowledge does not.
+
+Next rung: THRML's `IsingTrainingSpec` to learn the couplings instead
+of writing them (does learned intent percolate at lower carrier
+fraction — and does learning respect the capacity wall?).
 
 ## Where to take it next
 

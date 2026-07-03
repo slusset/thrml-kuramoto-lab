@@ -90,12 +90,18 @@ def _neighbor_fields(s, adj, clamp_mask, J, B):
     return h
 
 
-def glauber_sweep(s, adj, clamp_mask, free_idx, J, B, T, n_sweeps, pattern=None):
+def glauber_sweep(s, adj, clamp_mask, free_idx, J, B, T, n_sweeps, pattern=None,
+                  weights=None):
     """In-place-ish Glauber dynamics over free nodes; clamped nodes held fixed.
 
     `pattern` switches on Hopfield couplings J_ij = J * t_i * t_j (edges that
     should agree stay ferromagnetic, edges that should differ become
     anti-ferromagnetic), so `pattern` is an energy minimum. None = ferromagnet.
+
+    `weights` (NxN array, takes precedence) allows arbitrary per-edge
+    couplings — used for multi-pattern Hebb sums, where J_ij is no longer
+    +-J and the pattern shortcut can't express it. Clamp-incident edges are
+    amplified by B as before.
     """
     s = s.copy()
     for _ in range(n_sweeps):
@@ -103,9 +109,12 @@ def glauber_sweep(s, adj, clamp_mask, free_idx, J, B, T, n_sweeps, pattern=None)
         for i in order:
             h = 0.0
             for j in adj[i]:
-                w = (B * J) if clamp_mask[j] else J
-                if pattern is not None:
-                    w *= pattern[i] * pattern[j]
+                if weights is not None:
+                    w = weights[i, j] * (B if clamp_mask[j] else 1.0)
+                else:
+                    w = (B * J) if clamp_mask[j] else J
+                    if pattern is not None:
+                        w *= pattern[i] * pattern[j]
                 h += w * s[j]
             p_up = 1.0 / (1.0 + np.exp(-2.0 * h / max(T, 1e-9)))
             s[i] = 1 if rng.random() < p_up else -1
@@ -113,7 +122,7 @@ def glauber_sweep(s, adj, clamp_mask, free_idx, J, B, T, n_sweeps, pattern=None)
 
 
 def sample_equilibrium(G, target, clamp_idx, J=1.0, B=1.0, T=1.0,
-                       burn=40, record=60, pattern=None):
+                       burn=40, record=60, pattern=None, weights=None):
     """Settle the field with `clamp_idx` fixed to target; return final state and
     a magnetization trace (for the r_yy mixing sensor)."""
     N = G.number_of_nodes()
@@ -125,11 +134,11 @@ def sample_equilibrium(G, target, clamp_idx, J=1.0, B=1.0, T=1.0,
     free_idx = np.array([i for i in range(N) if not clamp_mask[i]])
 
     s = glauber_sweep(s, adj, clamp_mask, free_idx, J, B, T, burn,
-                      pattern=pattern)                    # burn-in
+                      pattern=pattern, weights=weights)   # burn-in
     trace = []
     for _ in range(record):
         s = glauber_sweep(s, adj, clamp_mask, free_idx, J, B, T, 1,
-                          pattern=pattern)
+                          pattern=pattern, weights=weights)
         s[clamp_idx] = target[clamp_idx]
         trace.append(s[free_idx].mean())
     return s, free_idx, np.array(trace)
@@ -381,7 +390,69 @@ def hopfield_recall(G, frac, strategy="degree", J=1.0, ratio=2.0, T=6.9,
     return m
 
 # %% [markdown]
-# ## 8. Run
+# ## 8. Multi-pattern capacity — when memories compete
+#
+# Store several patterns at once with the Hebb rule, `J_ij = Σ_μ t^μ_i·t^μ_j`
+# (unnormalized: each new covenant is laid on top of the existing ones; the
+# alternative — normalizing by P — trades interference for weakened signal.
+# Flag: this choice matters and is made explicitly). Each stored pattern is a
+# valley; they also interfere — for the cued pattern, the other P−1 contribute
+# random noise of scale √(P−1) per edge. Dense-network theory says capacity
+# α_c ≈ 0.138·(connections per node); on a sparse graph (⟨k⟩ ≈ 6 here) that
+# predicts **a handful of patterns at most**. Sparse meshes are cheap to
+# steer but poor libraries.
+#
+# The gauge transform that made single-pattern Hopfield "just the ferromagnet"
+# does NOT survive superposition — this is genuinely new physics for the lab.
+# We measure at the calibrated single-pattern operating point (T, B·J/T fixed),
+# so what we find is *operating capacity at the steerable point*, not the
+# zero-temperature theoretical maximum.
+#
+# **H6 (capacity).** Cued recall (carriers clamp fragments of pattern 0)
+# degrades as P grows, with a knee at small P. Degree placement sustains
+# recall to higher P than random. *Falsified if* recall is P-independent
+# (interference doesn't bite at this size) or random ≥ degree.
+#
+# **H6b (the monitor prediction — charter-relevant).** At capacity collapse,
+# `r_struct` stays elevated while cued fidelity drops: the mesh settles into
+# *some* stored (or mixture) state, honoring its couplings, just not the one
+# that was cued. Coupling-satisfaction certifies "serving a stored intent,"
+# not "serving the intent you asked for." *Falsified if* r_struct tracks
+# fid_cued down — then the monitor is stronger than we fear.
+
+# %%
+def build_hopfield_weights(G, patterns):
+    """Hebb rule on the graph's edges: W[i,j] = Σ_μ t^μ_i · t^μ_j."""
+    N = G.number_of_nodes()
+    W = np.zeros((N, N))
+    for i, j in G.edges():
+        w = float(np.sum(patterns[:, i] * patterns[:, j]))
+        W[i, j] = W[j, i] = w
+    return W
+
+
+def multi_pattern_recall(G, P, frac, strategy="degree", ratio=2.0, T=6.9,
+                         burn=40, record=60, pattern_seed=11):
+    """Store P patterns, cue pattern 0 via carriers; measure who gets served."""
+    N = G.number_of_nodes()
+    pats = np.random.default_rng(pattern_seed).choice(
+        [-1, 1], size=(P, N)).astype(int)
+    W = build_hopfield_weights(G, pats)
+    cue = pats[0]
+    clamp_idx = place_carriers(G, frac, strategy=strategy)
+    B = ratio * T / 1.0
+    s, free_idx, trace = sample_equilibrium(G, cue, clamp_idx, J=1.0, B=B, T=T,
+                                            burn=burn, record=record, weights=W)
+    m = metrics(s, free_idx, cue, trace)
+    others = [abs(float((s[free_idx] * pats[mu][free_idx]).mean()))
+              for mu in range(1, P)]
+    m["fid_other"] = max(others) if others else 0.0   # best NON-cued overlap
+    m["r_struct"] = float(np.mean([np.sign(W[i, j]) * s[i] * s[j]
+                                   for i, j in G.edges()]))
+    return m
+
+# %% [markdown]
+# ## 9. Run
 # Defaults are sized to run on a laptop CPU in a couple of minutes. Scale `N`,
 # `record`, and `sweeps_per_step` up once you swap in the THRML sampler and have
 # a GPU under it.
@@ -433,3 +504,11 @@ if __name__ == "__main__":
             h5 = hopfield_recall(G, frac, strategy=strat)
             print(f"{strat:8s}  {frac:.2f}  {h5['fid']:5.2f}  {h5['r_mag']:5.2f}"
                   f"     {h5['r_struct']:5.2f}  {h5['r_yy']:5.2f}")
+
+    # H6/H6b: multi-pattern capacity at the calibrated operating point.
+    print("\nH6 multi-pattern capacity (scale_free, T=6.9, frac=0.10, degree):")
+    print("   P   fid_cued  fid_other  r_struct")
+    for P in (1, 2, 3, 5, 8, 12):
+        h6 = multi_pattern_recall(G, P, 0.10, strategy="degree")
+        print(f"  {P:2d}    {h6['fid']:5.2f}     {h6['fid_other']:5.2f}"
+              f"     {h6['r_struct']:5.2f}")
