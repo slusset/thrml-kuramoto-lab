@@ -342,11 +342,21 @@ if __name__ == "__main__":
     # H1/H2 view
     plot_thresholds(res, topo="scale_free", ratio=2.0)
 
-    # H3: staged vs monolithic budget on one graph
+    # H3: staged vs monolithic at the SAME total clamp budget on one graph.
+    # Coherent target — a random pattern is not an attractor of a ferromagnet
+    # (see modeling notes: arbitrary targets need Hopfield couplings J_ij=t_i·t_j).
     G = make_graph("scale_free", cfg.N, seed=1)
-    target = rng.choice([-1, 1], size=G.number_of_nodes()).astype(int)
+    N = G.number_of_nodes()
+    target = np.ones(N, dtype=int)
     staged = run_staged(G, target, K=4, frac_per_step=0.02, strategy="ci", B=2.0)
-    print("staged:", {k: staged[k] for k in ("fid", "total_budget", "mean_ryy")})
+    clamp_idx = place_carriers(G, staged["total_budget"], strategy="ci")
+    s, free_idx, trace = sample_equilibrium(G, target, clamp_idx, B=2.0, T=1.0,
+                                            burn=30, record=30)
+    mono = metrics(s, free_idx, target, trace)
+    print("staged:    ", {k: round(staged[k], 3) for k in ("fid", "total_budget", "mean_ryy")})
+    print("monolithic:", {"fid": round(mono["fid"], 3),
+                          "total_budget": staged["total_budget"],
+                          "r_yy": round(mono["r_yy"], 3)})
 
     # H4: wrong-target control. Carriers broadcast a COHERENT but wrong signal
     # (all -1); we score against the intended target (all +1). Expect the mesh to

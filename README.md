@@ -225,6 +225,89 @@ design rules do. "Percolation-aware placement of a few percent of
 carriers" survived translation between a deterministic oscillator
 swarm and a stochastic sampler; "4%" did not, and was never going to.
 
+## The DTM bridge (`dtm_col_infl_clamping.py`)
+
+A self-contained notebook-style script (pure numpy/networkx Glauber, no
+THRML dep — the sampler is an explicit seam for the block-Gibbs swap-in)
+that unions this repo's carrier-placement results with the Extropic
+DTM/DTCA paper's move: escape the mixing–expressivity tradeoff by
+*chaining shallow, well-mixed steps* instead of asking one deep
+landscape to carry the whole telos.
+
+What it adds that the repo doesn't have:
+
+- **Staged clamping (H3)** — K shallow settle steps with re-placed
+  carriers, vs one monolithic settle at the same total clamp budget.
+  The temporal twin of the guild/carrier-cluster move: telos composed
+  from small aligned fields.
+- **The `r_yy` mixing sensor** — lag-1 autocorrelation of the
+  magnetization trace, a minimal stand-in for the paper's Adaptive
+  Correlation Penalty. High `r_yy` = sluggish mixing = don't trust the
+  sample.
+- **A different protocol.** This repo's runs are *nucleation out of a
+  metastable trap* (field ordered in the OLD state, clamps flip
+  mid-run). The DTM script runs *ordering from disorder* (T above the
+  interior Tc, so any order is carrier-driven). Same percolation
+  question, different physics regime — thresholds are not comparable
+  across the two without care.
+
+Two honest collisions with the results above:
+
+- Its **H1 predicts CI beats degree** — but finding 4 (N=2000, both
+  regimes' placement math) already showed CI = degree everywhere
+  measured. Treat H1 as a re-test in the new regime, not an open
+  question.
+- A companion chat produced a **Sheaf-ADMM extension** (three-vertex
+  framing, `sheaf_admm_consensus`, deterministic-vs-thermodynamic
+  coordination cell) that was never landed here — the disk copy is the
+  pre-ADMM version. If that comparison matters, it needs to be
+  re-created or exported from that chat.
+
+First run status (2026-07-03, N=196, T=2.5, seed 7): **the sweep is
+saturated** — fid ≈ 0.9–1.0 for every strategy at every fraction down
+to 0.01, on small-world and scale-free at both B·J/T ratios. The
+script's own modeling note names the cause: T=2.5 clears the 2D-lattice
+Tc but small-world/scale-free are denser, so they sit *below* their
+effective Tc and order spontaneously; clamps just pick the sign. (One
+cell even ordered to the wrong sign: ci/0.01/ratio-1.) The companion
+chat's "CI wins on thermo fidelity" (0.912/0.982/1.000) reproduces here
+as 0.91/0.98/0.99 — saturation noise, not a placement effect. **Step 0
+(locate each topology's critical point) is prerequisite to every
+hypothesis in the file.** H4 does confirm cleanly (r_mag=1.0,
+fid=−1.0), and staged-vs-monolithic at equal budget (fixed to use a
+coherent target) reads 1.0 vs 0.989 — also at saturation, so H3 is
+untested, not supported.
+
+**Step 0 done (`run_tc.py`, same day).** Unclamped Glauber across a
+temperature grid per topology; Tc estimated where spontaneous |m|
+crosses 0.5 (the susceptibility peak is too noisy at N=196 single-seed
+— it put the lattice at 1.75 vs the exact 2.27; the crossing gave 2.5):
+
+| topology | Tc (N=196) | sweep now runs at 1.15·Tc |
+|---|---|---|
+| lattice | ≈ 2.5 (exact: 2.27) | 2.88 |
+| small_world (k=6) | ≈ 4.0 | 4.6 |
+| scale_free (m=3) | ≈ 6.0 | 6.9 |
+
+So the original T=2.5 sat at ~0.6·Tc for small-world and ~0.4·Tc for
+scale-free — deep in the ordered phase, hence the saturation.
+Re-swept at 1.15·Tc, B·J/T=2.0, H1 resolves into the same design rule
+the metastable-flip protocol found:
+
+- **scale_free** — clean separation: degree/CI reach fid ≈ 0.8 by 4%
+  carriers while random is still at 0.57 and never clears 0.8 by 20%.
+  **CI = degree within noise** (finding 4 again, new regime).
+- **small_world** — no consistent placement separation; mild
+  heterogeneity, little for placement to exploit.
+- **lattice** — *random wins*; with all degrees equal, "top-degree"
+  degenerates to node order, which clumps carriers into one region;
+  spreading beats clumping on homogeneous graphs.
+
+Placement gain grows with degree heterogeneity, and degree is all the
+placement math you need — now confirmed in both regimes (nucleation
+out of a metastable trap AND ordering from disorder). All single-seed;
+threshold curves want ~5 seeds before quoting numbers.
+
 ## Where to take it next
 
 - **Clock/Potts phases.** `CategoricalNode` with a cosine coupling factor
