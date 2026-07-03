@@ -305,8 +305,7 @@ the metastable-flip protocol found:
 
 Placement gain grows with degree heterogeneity, and degree is all the
 placement math you need — now confirmed in both regimes (nucleation
-out of a metastable trap AND ordering from disorder). All single-seed;
-threshold curves want ~5 seeds before quoting numbers.
+out of a metastable trap AND ordering from disorder).
 
 **Hopfield extension (H5, section 7 of the file).** Couplings
 `J_ij = J·t_i·t_j` make an arbitrary pattern `t` an energy minimum, so
@@ -331,9 +330,36 @@ split is now real rather than manufactured by the H4 wrong-target
 trick; and `r_struct` (mean edge coupling-satisfaction
 `sign(J_ij)·s_i·s_j` — target-blind, locally computable) tracks
 fidelity almost exactly. **The honest homeostatic monitor for
-structured intent is coupling-satisfaction, not consensus.** Next rung:
-multiple stored patterns (interference/capacity), then THRML's
-`IsingTrainingSpec` to learn the couplings instead of writing them.
+structured intent is coupling-satisfaction, not consensus.** This
+finding is now recorded in the `homeostasis_telos` CHARTER ("The
+relational finding") together with its flag: the monitor is honest
+exactly insofar as the couplings are — the defense budget moves from
+hub capture-resistance to covenant integrity.
+
+**Ensemble pass (`run_ensemble.py`, 5 seeds — new graph, dynamics RNG,
+and pattern per replicate; CSVs in `data/`).** Everything above
+survives with error bars:
+
+- **scale_free** — degree/CI ≫ random at every fraction (1% carriers:
+  0.59±0.06 vs 0.31±0.07; 9%: 0.91±0.01 vs 0.64±0.05). CI = degree to
+  within ±0.01 across the whole curve.
+- **small_world** — 5 seeds resolve what single-seed noise hid: a
+  modest smart-placement edge at sparse fractions (1%: degree
+  0.37±0.11, CI 0.45±0.17 vs random 0.16±0.11), converging by ~9%.
+  Consistent with "gain grows with heterogeneity" — mild heterogeneity,
+  mild gain.
+- **lattice** — random wins decisively (20%: 0.94±0.02 vs 0.55±0.13);
+  degree and CI produce literally identical rows (equal degrees ⇒ same
+  tie-broken ranking ⇒ same clumped carrier set).
+- **Hopfield (H5)** — degree recall 0.95±0.02 at 16% with r_mag
+  0.04±0.03; r_struct tracks fid within ~0.01 in every cell. One new
+  wrinkle: random-placement recall plateaus (~0.66 from 10% to 16%) —
+  possibly stuck partial-recall domains; worth a look before the
+  multi-pattern step.
+
+Next rung: multiple stored patterns (interference/capacity), then
+THRML's `IsingTrainingSpec` to learn the couplings instead of writing
+them.
 
 ## Where to take it next
 
