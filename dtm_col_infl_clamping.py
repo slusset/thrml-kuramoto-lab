@@ -529,6 +529,48 @@ def clock_metrics(s, free_idx, target, trace, q):
     return dict(r_mag=r_mag, fid=fid, r_yy=r_yy)
 
 # %% [markdown]
+# ### 9k. The kinetic dial — finding 6's mechanism, tested where it lives
+#
+# H8a showed the *equilibrium* covering law is q-invariant. But finding 6's
+# 8× substrate gain difference was measured in the **metastable-flip**
+# protocol: a field locked in the OLD phase, clamps flipped mid-run, escape
+# as a race against the horizon. The mechanism hypothesis — "binary spins
+# can't partially align, so unclamped hubs anchor the old phase absolutely"
+# — is a claim about *escaping traps*. Test it there:
+#
+# **H9 (kinetic dial).** At matched relative trap depth (T = 0.75·Tc(q)),
+# the kinetic escape threshold h_c(scale-free, random) falls as q grows —
+# soft phases let the flip leak through unclamped hubs gradually.
+# *Falsified if* h_c is q-flat (the discrete/soft axis is not the mechanism)
+# or rises. At q=2 this protocol IS the original Ising metastable flip.
+
+# %%
+def kinetic_flip(G, q, frac, strategy="random", J=1.0, ratio=2.0, T=1.0,
+                 horizon=150, B=None):
+    """Field starts locked in the OLD phase (0); carriers clamp the antipodal
+    NEW phase (q/2); return fidelity to NEW after `horizon` sweeps. Kinetic —
+    always quote the horizon with the threshold.
+
+    `B` overrides the ratio-derived clamp amplification. B=1 is the original
+    metastable-flip protocol (plain pinned spins); amplified clamps at a
+    shallow trap floor every threshold to the grid bottom (seen 2026-07-03).
+    """
+    N = G.number_of_nodes()
+    adj = [list(G.neighbors(i)) for i in range(N)]
+    clamp_idx = place_carriers(G, frac, strategy=strategy)
+    clamp_mask = np.zeros(N, dtype=bool)
+    clamp_mask[clamp_idx] = True
+    free_idx = np.array([i for i in range(N) if not clamp_mask[i]])
+    new = np.full(N, q // 2)
+    s = np.zeros(N, dtype=int)              # the trap: everyone in OLD
+    s[clamp_idx] = new[clamp_idx]           # carriers flip
+    if B is None:
+        B = ratio * T / J
+    s = clock_sweep(s, adj, clamp_mask, free_idx, q, J, B, T, horizon)
+    theta = 2 * np.pi * (s[free_idx] - new[free_idx]) / q
+    return float(np.cos(theta).mean())
+
+# %% [markdown]
 # ## 10. Run
 # Defaults are sized to run on a laptop CPU in a couple of minutes. Scale `N`,
 # `record`, and `sweeps_per_step` up once you swap in the THRML sampler and have

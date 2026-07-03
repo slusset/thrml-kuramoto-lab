@@ -495,14 +495,51 @@ absolutely when spins are binary" is a claim about escaping traps, not
 about coverage. Testing the dial there — clock model below Tc, clamps
 flipped mid-run — is the honest follow-up.
 
+**The kinetic dial (H9, `run_kinetic.py`, 3 seeds).** Finding 6's
+mechanism, tested in its own regime: field locked in the OLD phase at
+matched relative trap depth (T = 0.6·Tc(q)), plain pinned clamps
+(B=1 — the original protocol), carriers flip to the antipodal phase,
+h_c = smallest fraction that escapes within 150 sweeps. (Method note,
+per the honest-failure rule: a first run at 0.75·Tc with amplified
+clamps floored every threshold to the grid bottom — shallow trap +
+megaphone carriers discriminate nothing. Both knobs matter; the data
+kept both runs.) Scale-free, medians over 3 seeds:
+
+| q | h_c random | h_c degree | penalty (random/degree) |
+|---|---|---|---|
+| 2 | 0.12 | 0.02 | 6× |
+| 4 | 0.12 | 0.02 | 6× |
+| 8 | 0.02 | 0.01 | 2× |
+| 16 | 0.02 | 0.01 | 2× |
+
+**H9 confirmed — and the melt is a step, not a slope.** The
+random-placement escape threshold collapses 6× between q=4 and q=8 and
+is flat on either side. The mechanism reads as a nucleation→rotation
+crossover: with coarse phases (q≤4, steps ≥90°) there is no cheap
+path between old and new — escape must nucleate over the full barrier,
+unclamped hubs anchor the old phase, and placement is 6× leverage.
+Once the staircase is fine enough (q≥8, steps ≤45°), the field escapes
+by *gradual rotation* through intermediates — the trap dissolves into
+a soft mode, redirection is cheap for everyone, and placement leverage
+compresses to 2×. This is why Kuramoto (continuous phases) showed
+h_c ≈ 0.03 under random placement where binary Gibbs showed 0.16:
+**the 8× substrate gain difference of finding 6 is a discreteness
+effect, and it lives entirely in the kinetic regime.**
+
+Paired with H8a, the two regimes now separate cleanly:
+*holding/coverage economics are q-invariant* (placement is a covering
+problem no matter how expressive the states), while *re-steering
+economics are set by state-space granularity* (coarse states trap;
+fine states rotate). For a mesh that must remain redirectable, the
+one-way-door price depends on how finely its members can disagree.
+
 Where this leaves the lab: the design rules are closed for this model
-class (placement = covering — now q-invariant, capacity = substrate,
-monitor = covenant-satisfaction below capacity). Open doors: the
-kinetic-regime clock dial (finding 6's mechanism), Potts capacity
-(H8b: does recall capacity grow ~q² with richer covenants?), denser
-webs / higher-order factors, and the THRML-hardware questions —
-annealed β and the real DTM denoising chain behind the section-5
-proxy.
+class (placement = covering — q-invariant; capacity = substrate;
+re-steering = granularity; monitor = covenant-satisfaction below
+capacity). Open doors: Potts capacity (H8b: does recall capacity grow
+~q² with richer covenants?), denser webs / higher-order factors, and
+the THRML-hardware questions — annealed β and the real DTM denoising
+chain behind the section-5 proxy.
 
 ## Where to take it next
 
