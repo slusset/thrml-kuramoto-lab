@@ -452,7 +452,84 @@ def multi_pattern_recall(G, P, frac, strategy="degree", ratio=2.0, T=6.9,
     return m
 
 # %% [markdown]
-# ## 9. Run
+# ## 9. Clock phases — the dial between Ising and Kuramoto
+#
+# The q-state clock model puts each node's state on a circle,
+# `θ_a = 2πa/q`, with coupling `J·cos(θ_i − θ_j)` per edge. `q=2` IS the
+# Ising model (regression gate); `q→∞` approaches the XY model — Kuramoto's
+# phase space. This is the dial for finding 6's open question: the Gibbs
+# substrate punished degree heterogeneity ~8× harder than Kuramoto, and the
+# suspected mechanism was that binary spins can't *partially* align — an
+# unclamped hub anchors the old phase absolutely, while soft phases let
+# intent leak through it gradually.
+#
+# **H8a (heterogeneity penalty).** At matched operating points (1.15·Tc(q),
+# located per q — Tc moves as states are added), the random-vs-degree
+# placement gap on scale-free shrinks monotonically as q grows: partial
+# alignment extends the influence radius, so coverage matters less.
+# *Falsified if* the gap is q-independent (the 8× was never about softness)
+# or grows.
+#
+# Metrics generalize gradedly: `fid` = mean cos(θ_i − θ_target,i) over free
+# nodes; `r_mag` = |mean e^{iθ}| (the Kuramoto order parameter, exactly);
+# the trace for `r_yy` is mean cos(θ) over free nodes. At q=2 all three
+# reduce to their Ising forms.
+
+# %%
+def clock_sweep(s, adj, clamp_mask, free_idx, q, J, B, T, n_sweeps):
+    """Heat-bath Gibbs for the q-state clock model; clamped nodes held fixed.
+
+    cos_diff[b, a] = cos(2π(a − b)/q), so a neighbor in state b contributes
+    the row cos_diff[b] to the local field over candidate states a.
+    """
+    ang = 2.0 * np.pi * np.arange(q) / q
+    cos_diff = np.cos(ang[None, :] - ang[:, None])   # [q, q]
+    s = s.copy()
+    for _ in range(n_sweeps):
+        order = rng.permutation(free_idx)
+        for i in order:
+            h = np.zeros(q)
+            for j in adj[i]:
+                w = (B * J) if clamp_mask[j] else J
+                h += w * cos_diff[s[j]]
+            p = np.exp((h - h.max()) / max(T, 1e-9))
+            p /= p.sum()
+            s[i] = rng.choice(q, p=p)
+    return s
+
+
+def sample_clock_equilibrium(G, target, clamp_idx, q, J=1.0, B=1.0, T=1.0,
+                             burn=40, record=60):
+    """Clock-model analog of sample_equilibrium; returns state + cos trace."""
+    N = G.number_of_nodes()
+    adj = [list(G.neighbors(i)) for i in range(N)]
+    clamp_mask = np.zeros(N, dtype=bool)
+    clamp_mask[clamp_idx] = True
+    s = rng.integers(0, q, size=N)
+    s[clamp_idx] = target[clamp_idx]
+    free_idx = np.array([i for i in range(N) if not clamp_mask[i]])
+
+    s = clock_sweep(s, adj, clamp_mask, free_idx, q, J, B, T, burn)
+    trace = []
+    for _ in range(record):
+        s = clock_sweep(s, adj, clamp_mask, free_idx, q, J, B, T, 1)
+        s[clamp_idx] = target[clamp_idx]
+        trace.append(np.cos(2 * np.pi * s[free_idx] / q).mean())
+    return s, free_idx, np.array(trace)
+
+
+def clock_metrics(s, free_idx, target, trace, q):
+    theta = 2 * np.pi * s[free_idx] / q
+    theta_t = 2 * np.pi * target[free_idx] / q
+    fid = float(np.cos(theta - theta_t).mean())
+    r_mag = float(abs(np.exp(1j * theta).mean()))
+    x = trace - trace.mean()
+    denom = (x * x).sum()
+    r_yy = float((x[:-1] * x[1:]).sum() / denom) if denom > 1e-12 else 0.0
+    return dict(r_mag=r_mag, fid=fid, r_yy=r_yy)
+
+# %% [markdown]
+# ## 10. Run
 # Defaults are sized to run on a laptop CPU in a couple of minutes. Scale `N`,
 # `record`, and `sweeps_per_step` up once you swap in the THRML sampler and have
 # a GPU under it.

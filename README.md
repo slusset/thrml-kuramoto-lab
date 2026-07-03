@@ -467,12 +467,42 @@ couplings.
   the mesh can measure its own insufficiency at covenant-writing time,
   before any recall is attempted, let alone failed.
 
+**Clock phases (H8a, `run_clock.py`, 3 seeds).** The q-state clock
+model (`J·cos(θ_i−θ_j)`; q=2 IS Ising, q→∞ approaches XY/Kuramoto) is
+the dial for finding 6's open mechanism question: does the Gibbs
+substrate punish heterogeneity harder *because* binary spins can't
+partially align? Per-q calibration first (the step-0 lesson pays
+immediately: Tc drops from 6.0 at q=2 to ~3.0 for all q≥4 — running
+q=16 at the Ising temperature would have measured pure disorder). Then
+fid-vs-fraction at 1.15·Tc(q), random vs degree, scale-free. The q=2
+row reproduces the Ising ensemble (gate passed). Result — the mean
+degree-minus-random gap:
+
+| q | 2 | 4 | 8 | 16 |
+|---|---|---|---|---|
+| placement gap | +0.26 | +0.24 | +0.25 | +0.23 |
+
+**H8a falsified in this regime** — the gap is flat in q (a ~13% drift,
+non-monotonic, within 3-seed noise), not the predicted shrink.
+Softness does not dissolve the covering problem: near Tc the influence
+radius is set by the correlation length, not by whether alignment is
+graded, so **placement-as-covering is invariant across the whole
+Ising→XY dial** in the equilibrium (ordering-from-disorder) protocol.
+The design rule gets *more* universal; the mechanism hypothesis
+relocates: finding 6's 8× gain difference was measured in the
+*metastable-flip kinetic* protocol, so "hubs anchor the old phase
+absolutely when spins are binary" is a claim about escaping traps, not
+about coverage. Testing the dial there — clock model below Tc, clamps
+flipped mid-run — is the honest follow-up.
+
 Where this leaves the lab: the design rules are closed for this model
-class (placement = covering, capacity = substrate, monitor =
-covenant-satisfaction below capacity). The open doors are model-class
-doors — denser webs, higher-order factors, Potts/clock phases — and
-the two THRML-hardware questions: annealed β schedules and the real
-DTM denoising chain behind the section-5 proxy.
+class (placement = covering — now q-invariant, capacity = substrate,
+monitor = covenant-satisfaction below capacity). Open doors: the
+kinetic-regime clock dial (finding 6's mechanism), Potts capacity
+(H8b: does recall capacity grow ~q² with richer covenants?), denser
+webs / higher-order factors, and the THRML-hardware questions —
+annealed β and the real DTM denoising chain behind the section-5
+proxy.
 
 ## Where to take it next
 
