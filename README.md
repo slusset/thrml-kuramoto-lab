@@ -134,15 +134,33 @@ brittle, frozen mode" now has a price tag.
 Threshold criterion is relative (fidelity > 0.6 × coherence), since an
 absolute cut conflates "flipped" with "ordered" in shallow traps.
 
-## Placement law, tested (`--placement random|hub|ci`)
+## Placement law, tested at scale (`--placement random|hub|ci`)
 
-Collective-influence (CI_2, Morone & Makse) placement was predicted to
-beat degree placement. On this graph it can't be tested: at N=120,
-m=6, the top-12 CI and top-12 degree nodes are the *same 12 nodes*
-(rankings only diverge on larger, sparser graphs — N≳1000, m=2–3).
-What is established: (ci = hub) h_c = 0.03 vs random > 0.10 on
-scale-free — smart placement is worth >3× in carrier budget, and the
-CI-vs-degree question is queued behind a bigger graph.
+Collective-influence (CI_2, Morone & Makse) was predicted to beat
+degree placement, with the gap widening on scale-free graphs. Tested at
+N=2000 (1s/run — JAX shrugs at the scale-up):
+
+| graph (N=2000) | k_c ci | k_c hub | k_c random |
+|---|---|---|---|
+| scale-free (m=2, j=0.5) | 15 | 15 | ≫15 |
+| Erdős–Rényi (m=3, j=0.35) | 100–120 | 100–120 | 200–250 |
+
+**CI = degree, everywhere we could measure.** On scale-free the top-k
+rankings are literally the same nodes. On ER the rankings genuinely
+diverge (75% overlap at k=120) — and the thresholds *still* tie. The
+defensible reading: CI optimizes network *fragmentation*; kinetic
+nucleation cares about local field injection, and for that degree is
+the right heuristic. (CI's regime may also be k/N ≪ 1% on N≳10⁵
+graphs; untested here. ER numbers are single-seed.)
+
+What did hold from the prediction: the smart-vs-random gap widens with
+degree heterogeneity — ≥13× on scale-free (15 vs ≫200), ~2× on ER,
+zero on the ring by symmetry. And a scaling gift: on scale-free the
+hub threshold *fraction* falls with N (h_c: 0.025 at N=120 → 0.0075
+at N=2000) — hubs grow with the graph, so hub-seated intent gets
+cheaper at scale. For the mesh design rule: heavy-tailed connectivity
+plus hub-seated carriers is the economical regime, and plain degree is
+all the placement math you need.
 
 ## The adversarial reading: infiltration (`run_contest.py`)
 
@@ -177,6 +195,35 @@ Homeostatic monitoring gives you a detection *window*, not a detection
 *guarantee*: if the flip completes faster than your monitoring cadence,
 it never happened, as far as the mesh can tell. (The charter's FROZEN
 trap, now with an adversary steering it.)
+
+## The substrate-invariance test (`run_substrate.py`)
+
+The closer. Same graph instances, same carrier sets (matched RNG),
+two entirely different physics: the oracle's Kuramoto dynamics
+(`homeostasis_telos/substrate_invariance.py`, verified against
+`main.py` on the ring before being trusted) vs block Gibbs on the
+clamped EBM. N=120, seed 7, kinetic horizons fixed per substrate:
+
+| condition | h_c Kuramoto | h_c Gibbs |
+|---|---|---|
+| ring / random | 0.02 | 0.02 |
+| small_world / random | 0.02 | 0.04 |
+| scale_free / random | 0.03 | **0.16** |
+| scale_free / hub | **0.01** | 0.03 |
+
+**Every effect has the same sign in both substrates.** Degree
+heterogeneity penalizes random placement in both; hub placement wins
+in both (3× in Kuramoto, 5× in Gibbs); the ring is the easy case in
+both. The orderings agree. What differs is the gain: Gibbs punishes
+heterogeneity ~8× harder than Kuramoto (binary spins can't partially
+align, so unclamped hubs anchor the old phase absolutely; soft phases
+let intent leak through a hub gradually).
+
+So the claim lands in its honest form: **the topology owns the
+ordering; the substrate sets the scale.** Constants don't transfer —
+design rules do. "Percolation-aware placement of a few percent of
+carriers" survived translation between a deterministic oscillator
+swarm and a stochastic sampler; "4%" did not, and was never going to.
 
 ## Where to take it next
 

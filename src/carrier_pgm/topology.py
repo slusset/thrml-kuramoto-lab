@@ -75,12 +75,28 @@ def scale_free(n: int, m: int = 6, seed: int = 7) -> list[tuple[int, int]]:
     return [tuple(sorted(e)) for e in sorted(edges, key=lambda s: sorted(s))]
 
 
+def erdos_renyi(n: int, m: int = 6, seed: int = 7) -> list[tuple[int, int]]:
+    """G(n, M) with M = m*n edges (mean degree 2m) -- same edge budget as
+    scale_free(n, m). Homogeneous degrees: the arena where degree ranking
+    is nearly uninformative and collective influence has to earn its keep.
+    """
+    rng = np.random.default_rng(seed)
+    edges: set[frozenset] = set()
+    target = m * n
+    while len(edges) < target:
+        a, b = rng.integers(n, size=2)
+        if a != b:
+            edges.add(frozenset((int(a), int(b))))
+    return [tuple(sorted(e)) for e in sorted(edges, key=lambda s: sorted(s))]
+
+
 BUILDERS = {
     "ring": lambda spec: ring(spec.n, spec.horizon),
     "small_world": lambda spec: small_world(
         spec.n, spec.horizon, spec.p_rewire, spec.seed
     ),
     "scale_free": lambda spec: scale_free(spec.n, spec.m, spec.seed),
+    "erdos_renyi": lambda spec: erdos_renyi(spec.n, spec.m, spec.seed),
 }
 
 
