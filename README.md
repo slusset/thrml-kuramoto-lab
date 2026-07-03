@@ -308,6 +308,33 @@ placement math you need — now confirmed in both regimes (nucleation
 out of a metastable trap AND ordering from disorder). All single-seed;
 threshold curves want ~5 seeds before quoting numbers.
 
+**Hopfield extension (H5, section 7 of the file).** Couplings
+`J_ij = J·t_i·t_j` make an arbitrary pattern `t` an energy minimum, so
+carriers clamping a few nodes of the pattern trigger associative
+recall — intent stored in the relationships, not broadcast. (A gauge
+transform maps it back to the ferromagnet, so the step-0 Tc carries
+over.) Scale-free, T=6.9, B·J/T=2.0:
+
+| strategy | frac | fid | r_mag | r_struct |
+|---|---|---|---|---|
+| random | 0.02 | 0.41 | 0.04 | 0.43 |
+| random | 0.16 | 0.79 | 0.07 | 0.82 |
+| degree | 0.02 | 0.73 | 0.01 | 0.71 |
+| degree | 0.06 | 0.90 | 0.05 | 0.91 |
+| degree | 0.16 | 0.94 | 0.02 | 0.95 |
+
+Three confirmations in one table: recall rises with carrier fraction
+and degree placement beats random (the design rule survives structured
+targets); **`r_mag` ≈ 0 throughout** — magnetization-based homeostatic
+monitoring is completely blind to structured order, so the fid/r_mag
+split is now real rather than manufactured by the H4 wrong-target
+trick; and `r_struct` (mean edge coupling-satisfaction
+`sign(J_ij)·s_i·s_j` — target-blind, locally computable) tracks
+fidelity almost exactly. **The honest homeostatic monitor for
+structured intent is coupling-satisfaction, not consensus.** Next rung:
+multiple stored patterns (interference/capacity), then THRML's
+`IsingTrainingSpec` to learn the couplings instead of writing them.
+
 ## Where to take it next
 
 - **Clock/Potts phases.** `CategoricalNode` with a cosine coupling factor

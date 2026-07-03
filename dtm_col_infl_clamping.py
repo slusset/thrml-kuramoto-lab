@@ -90,8 +90,13 @@ def _neighbor_fields(s, adj, clamp_mask, J, B):
     return h
 
 
-def glauber_sweep(s, adj, clamp_mask, free_idx, J, B, T, n_sweeps):
-    """In-place-ish Glauber dynamics over free nodes; clamped nodes held fixed."""
+def glauber_sweep(s, adj, clamp_mask, free_idx, J, B, T, n_sweeps, pattern=None):
+    """In-place-ish Glauber dynamics over free nodes; clamped nodes held fixed.
+
+    `pattern` switches on Hopfield couplings J_ij = J * t_i * t_j (edges that
+    should agree stay ferromagnetic, edges that should differ become
+    anti-ferromagnetic), so `pattern` is an energy minimum. None = ferromagnet.
+    """
     s = s.copy()
     for _ in range(n_sweeps):
         order = rng.permutation(free_idx)
@@ -99,6 +104,8 @@ def glauber_sweep(s, adj, clamp_mask, free_idx, J, B, T, n_sweeps):
             h = 0.0
             for j in adj[i]:
                 w = (B * J) if clamp_mask[j] else J
+                if pattern is not None:
+                    w *= pattern[i] * pattern[j]
                 h += w * s[j]
             p_up = 1.0 / (1.0 + np.exp(-2.0 * h / max(T, 1e-9)))
             s[i] = 1 if rng.random() < p_up else -1
@@ -106,7 +113,7 @@ def glauber_sweep(s, adj, clamp_mask, free_idx, J, B, T, n_sweeps):
 
 
 def sample_equilibrium(G, target, clamp_idx, J=1.0, B=1.0, T=1.0,
-                       burn=40, record=60):
+                       burn=40, record=60, pattern=None):
     """Settle the field with `clamp_idx` fixed to target; return final state and
     a magnetization trace (for the r_yy mixing sensor)."""
     N = G.number_of_nodes()
@@ -117,10 +124,12 @@ def sample_equilibrium(G, target, clamp_idx, J=1.0, B=1.0, T=1.0,
     s[clamp_idx] = target[clamp_idx]                 # boundary = the program
     free_idx = np.array([i for i in range(N) if not clamp_mask[i]])
 
-    s = glauber_sweep(s, adj, clamp_mask, free_idx, J, B, T, burn)  # burn-in
+    s = glauber_sweep(s, adj, clamp_mask, free_idx, J, B, T, burn,
+                      pattern=pattern)                    # burn-in
     trace = []
     for _ in range(record):
-        s = glauber_sweep(s, adj, clamp_mask, free_idx, J, B, T, 1)
+        s = glauber_sweep(s, adj, clamp_mask, free_idx, J, B, T, 1,
+                          pattern=pattern)
         s[clamp_idx] = target[clamp_idx]
         trace.append(s[free_idx].mean())
     return s, free_idx, np.array(trace)
@@ -328,7 +337,51 @@ def plot_thresholds(results, topo, ratio):
     plt.show()
 
 # %% [markdown]
-# ## 7. Run
+# ## 7. Hopfield: structured targets — intent in the couplings
+#
+# The ferromagnet has exactly two valleys (all-up, all-down), so the only
+# intent it can hold is *uniformity* — and with a uniform target, fidelity and
+# magnetization coincide by construction (the H4 wrong-target trick was needed
+# to pry them apart). Hopfield's move: **sculpt the valley**. For any pattern
+# `t`, set `J_ij = J·t_i·t_j` and `t` becomes an energy minimum. Carriers then
+# clamp a few nodes of the pattern and relaxation *completes the memory* —
+# associative recall, the percolation question upgraded from "can carriers
+# make everyone conform?" to "can carriers make the mesh remember?"
+#
+# Gauge note: `s_i → s_i·t_i` maps the Hopfield model back to the ferromagnet,
+# so the single-pattern Tc and threshold physics carry over from step 0
+# (`run_tc.py`) unchanged. What does NOT carry over is what the monitors see:
+#
+# - `r_mag` (magnetization) is **blind** to structured order — a balanced
+#   pattern recalled perfectly has `mean(s) ≈ 0`.
+# - `r_struct` = mean over edges of `sign(J_ij)·s_i·s_j` — *satisfaction of
+#   the local wiring* — is target-blind (each node needs only its own edge
+#   signs) and DOES track recall. The honest homeostatic monitor for
+#   structured intent is coupling-satisfaction, not consensus.
+#
+# **H5 (structured recall).** With Hopfield couplings on scale-free at the
+# calibrated T, `fid → 1` at a sparse carrier fraction (degree placement)
+# while `r_mag` stays ≈ 0 and `r_struct` tracks `fid`. *Falsified if* fid
+# fails to rise (the pattern is not an attractor — implementation wrong) or
+# r_mag tracks fid (the metric split is illusory).
+
+# %%
+def hopfield_recall(G, frac, strategy="degree", J=1.0, ratio=2.0, T=6.9,
+                    burn=40, record=60, pattern_seed=11):
+    """Clamp `frac` carriers to a stored random pattern; measure recall."""
+    N = G.number_of_nodes()
+    t = np.random.default_rng(pattern_seed).choice([-1, 1], size=N).astype(int)
+    clamp_idx = place_carriers(G, frac, strategy=strategy)
+    B = ratio * T / J
+    s, free_idx, trace = sample_equilibrium(G, t, clamp_idx, J=J, B=B, T=T,
+                                            burn=burn, record=record, pattern=t)
+    m = metrics(s, free_idx, t, trace)
+    m["r_struct"] = float(np.mean([t[i] * t[j] * s[i] * s[j]
+                                   for i, j in G.edges()]))
+    return m
+
+# %% [markdown]
+# ## 8. Run
 # Defaults are sized to run on a laptop CPU in a couple of minutes. Scale `N`,
 # `record`, and `sweeps_per_step` up once you swap in the THRML sampler and have
 # a GPU under it.
@@ -369,3 +422,14 @@ if __name__ == "__main__":
     ctrl = metrics(s, free_idx, intended, trace)   # score against the TRUE sign
     print("wrong-target control (want r_mag high, fid negative):",
           {k: round(v, 3) for k, v in ctrl.items()})
+
+    # H5: Hopfield recall of a structured pattern, scale-free at calibrated T
+    # (Tc ~ 6.0 from run_tc.py -> T = 6.9). Expect fid to rise with fraction
+    # while r_mag stays ~0; r_struct should track fid.
+    print("\nH5 Hopfield recall (scale_free, T=6.9, B*J/T=2.0):")
+    print("strategy  frac    fid   r_mag  r_struct   r_yy")
+    for strat in ("random", "degree"):
+        for frac in (0.02, 0.06, 0.10, 0.16):
+            h5 = hopfield_recall(G, frac, strategy=strat)
+            print(f"{strat:8s}  {frac:.2f}  {h5['fid']:5.2f}  {h5['r_mag']:5.2f}"
+                  f"     {h5['r_struct']:5.2f}  {h5['r_yy']:5.2f}")
