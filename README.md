@@ -432,9 +432,47 @@ perfect recall can't satisfy every edge.
   signal can say *which* intent is being served. Structural
   self-knowledge survives; teleological self-knowledge does not.
 
-Next rung: THRML's `IsingTrainingSpec` to learn the couplings instead
-of writing them (does learned intent percolate at lower carrier
-fraction — and does learning respect the capacity wall?).
+**Learned couplings (H7, `run_learned.py`, 3 seeds).** The
+trainable-intent rung: train the edge weights by maximum likelihood
+(exact positive phase — all nodes visible; THRML block-Gibbs
+`estimate_moments` for the negative phase, β = 1/T_eval so learned and
+Hebb weights share units and the identical eval harness). Biases
+frozen at 0: same model class as Hebb, two ways of *writing* the
+couplings.
+
+- **H7a — learned intent percolates ~4× cheaper, with a catch.** At
+  P=1, learned couplings give fid = 1.00±0.00 at *every* fraction
+  tested, including 2% carriers where Hebb reads 0.73. But look at how:
+  training on noiseless patterns grows couplings until the model
+  matches ⟨s_i·s_j⟩ = 1 (mean |w| ≈ 3.9 vs Hebb's 1.0) — it deepens
+  the valley until the pattern is overwhelming at the operating
+  temperature. Per the master curve, depth is the price of
+  redirectability: learned-on-noiseless-data intent holds cheaper and
+  will steer dearer. (Training on a noised target distribution would
+  set the depth honestly — flagged, not run.)
+- **H7b — learning does NOT move the capacity wall.** fid_cued,
+  learned vs Hebb: P=2 0.81/0.75, P=3 0.61/0.58, P=5 0.49/0.50,
+  P=8 0.31/0.39, P=12 0.28/0.28. Same knee, same collapse; past the
+  wall learning is if anything slightly worse (it spreads error across
+  patterns where Hebb stores each equally). **The covenant budget is a
+  property of the substrate — graph sparsity × pairwise couplings —
+  not of the writing rule.** No cleverer covenant-writing buys
+  capacity; only densifying the web or higher-order covenants can.
+- **H7c — and the wall announces itself during learning.** The
+  training diagnostic is its own overload detector: at P=1 the
+  moment gap converges to 0.014; at P≥2 it *sticks* at 0.2–0.4 no
+  matter how long you train — the model class simply cannot make its
+  equilibrium look like all the things it's being asked to remember.
+  That is an earlier and cleaner overload signal than wiring conflicts:
+  the mesh can measure its own insufficiency at covenant-writing time,
+  before any recall is attempted, let alone failed.
+
+Where this leaves the lab: the design rules are closed for this model
+class (placement = covering, capacity = substrate, monitor =
+covenant-satisfaction below capacity). The open doors are model-class
+doors — denser webs, higher-order factors, Potts/clock phases — and
+the two THRML-hardware questions: annealed β schedules and the real
+DTM denoising chain behind the section-5 proxy.
 
 ## Where to take it next
 
