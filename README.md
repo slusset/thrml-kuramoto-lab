@@ -563,13 +563,41 @@ move** (H9 — fine phases rotate out of traps) and **freedom to hold
 multiplicity** (H8b — q×q covenants store many intents before
 interfering), and the two arrive together as q grows past ~4–8.
 
+**Finite-size scaling of the H8b exponent (`run_fss.py`, 3 seeds).**
+Is the q=8 undershoot (8–14× vs dense theory's 28×) small-graph noise,
+or a real ceiling? N = 196 → 400 → 800 at fixed density (BA m=3,
+⟨k⟩≈6 throughout), Tc recalibrated per (q, N), knee interpolated at
+m_cued = 0.7:
+
+| knee P₀.₇ | N=196 | N=400 | N=800 |
+|---|---|---|---|
+| q=4 | 4.3 | 3.4 | 3.3 |
+| q=8 | 12.1 | 6.9 | 9.4 |
+| ratio q8/q4 | 2.8× | 2.0× | 2.9× |
+
+**The knee does not rise with N.** The q=8/q=4 capacity ratio sits at
+2–3× at every size — dense theory demands 4.7× — with no upward trend.
+(The q=8 knees wobble 7–12 across sizes; 3 seeds + shallow curves; the
+robust statement is the absent N-trend, not any single knee.) So the
+undershoot is a **genuine sparse-substrate ceiling**: on a ⟨k⟩≈6 web,
+capacity grows roughly *linearly* in q, not quadratically. The dense
+quadratic law relies on many connections averaging away inter-pattern
+interference; with six edges per node the averaging is weak and richer
+tables saturate early.
+
+Design-rule refinement, final form: **covenant richness and web
+density are complements, not substitutes.** Richness without density
+saturates (~linear in q at ⟨k⟩≈6); the quadratic payoff exists only
+where density supports it. Capacity = density × richness^(~1 sparse,
+→2 dense).
+
 Where this leaves the lab: the design rules are closed for this model
 class (placement = covering — q-invariant; re-steering = granularity;
-capacity = substrate × covenant-richness; monitor =
-covenant-satisfaction below capacity). Open doors: finite-size scaling
-of the H8b exponent, denser webs / higher-order factors, and the
-THRML-hardware questions — annealed β and the real DTM denoising chain
-behind the section-5 proxy.
+capacity = density × richness, complements; monitor =
+covenant-satisfaction below capacity). Open doors: the density axis
+itself (⟨k⟩ sweep at fixed q — the complement claim's direct test),
+higher-order factors, and the THRML-hardware questions — annealed β
+and the real DTM denoising chain behind the section-5 proxy.
 
 ## Where to take it next
 
