@@ -591,11 +591,44 @@ saturates (~linear in q at ⟨k⟩≈6); the quadratic payoff exists only
 where density supports it. Capacity = density × richness^(~1 sparse,
 →2 dense).
 
-Where this leaves the lab: the design rules are closed for this model
-class (placement = covering — q-invariant; re-steering = granularity;
-capacity = density × richness, complements; monitor =
-covenant-satisfaction below capacity). Open doors: the density axis
-itself (⟨k⟩ sweep at fixed q — the complement claim's direct test),
+**The density axis (`run_density.py`, 3 seeds).** The complement
+claim's direct test: BA m ∈ (3, 6, 12, 24), ⟨k⟩ ≈ 6 → 42, both q, Tc
+per (q, density), P-grids scaled with density.
+
+| ⟨k⟩ | knee q=4 | knee q=8 | ratio | α(4)=knee/k | α(8)=knee/k |
+|---|---|---|---|---|---|
+| 5.9 | 4.3 | 12.1 | 2.8× | 0.72 | 2.05 |
+| 11.6 | 12.3 | 32.2 | 2.6× | 1.05 | 2.77 |
+| 22.5 | 18.9 | 56.4 | 3.0× | 0.84 | 2.50 |
+| 42.1 | 34.3 | 108.8 | 3.2× | 0.81 | 2.58 |
+
+- **Prediction 1 confirmed, cleanly: capacity = α(q)·⟨k⟩.** The
+  per-connection capacity α is flat across a 7× density range (α(4) ≈
+  0.85, α(8) ≈ 2.5). Density buys capacity in direct proportion —
+  at ⟨k⟩=42 the q=8 mesh holds ~109 patterns at N=196.
+- **Prediction 2 refuted — and with it, yesterday's mechanism.** The
+  q8/q4 ratio does NOT rise toward dense theory's 4.7×; it sits at
+  2.6–3.2× at every density. Sharper: α(4) ≈ 0.85 matches Kanter's
+  dense-theory 0.83 *exactly*, while α(8) ≈ 2.5 holds ~65% of its
+  dense value 3.86 at every density (and, per the FSS run, every N).
+  A shortfall that is density-independent and size-independent cannot
+  be interference-averaging starvation — that story is dead.
+- **Leading suspect, unproven: finite-temperature entropy.** All runs
+  sit at the steerable operating point (1.15·Tc), where richer state
+  spaces have more thermal escape channels per node — the same
+  fluctuation freedom that dissolves traps (H9) taxes storage. The
+  discriminating test is a β sweep: if α(8) recovers toward 3.86 as
+  T drops, the entropy story is confirmed — and the tax and the
+  freedom are the same coin, quantitatively.
+
+Final law for this model class: **capacity ≈ α(q)·⟨k⟩ — density and
+richness multiply** (both needed, neither substitutes), with α
+super-linear but sub-quadratic in q at the steerable temperature.
+
+Where this leaves the lab: placement = covering (q-invariant);
+re-steering = granularity; capacity = α(q)·⟨k⟩, multiplicative;
+monitor = covenant-satisfaction below capacity. Open doors: the β
+sweep (does α(8) recover at low T — the entropy suspect's trial),
 higher-order factors, and the THRML-hardware questions — annealed β
 and the real DTM denoising chain behind the section-5 proxy.
 
