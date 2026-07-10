@@ -37,7 +37,7 @@ def main() -> None:
 
     sweep([0.0, 0.05, 0.10, 0.15, 0.20, 0.30, 0.50, 0.80, 1.0], base=base)
 
-    print("\nCritical-threshold scan (where does intent survive perturbation?):")
+    print("\nOperational pinning-threshold scan (finite-horizon target overlap):")
     rows = sweep(
         np.linspace(0, args.scan_max, args.scan_points), base=base, verbose=False
     )
@@ -45,7 +45,7 @@ def main() -> None:
     if hc is None:
         print("  -> no crossing found in scan range (deepen beta/j or widen range)")
     else:
-        print(f"  -> teleological fidelity crosses 0.6 near h = {hc:.3f}")
+        print(f"  -> target overlap crosses 0.6 near sampled h = {hc:.3f}")
 
 
 if __name__ == "__main__":

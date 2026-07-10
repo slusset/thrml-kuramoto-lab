@@ -1,6 +1,13 @@
 # %% [markdown]
 # # Collective-Influence Clamping inside a Denoising Thermodynamic Step
 #
+# **Terminology note (2026-07-10):** this notebook preserves the language of
+# the experiment as it developed. In current project terminology, its carrier
+# nodes are externally pinned controls; its fraction crossings are operational
+# thresholds; and most uses of "percolation" below refer to target-alignment
+# propagation or influence coverage rather than a graph-connectivity
+# transition. See `docs/CONCEPTS.md` for the canonical vocabulary.
+#
 # **What this notebook tests:** whether placing a *sparse* set of clamped
 # ("carrier") nodes by **collective influence** (Morone–Makse) lowers the
 # carrier-fraction threshold for coherence — and whether **staging** that

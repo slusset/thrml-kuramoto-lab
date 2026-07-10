@@ -1,15 +1,19 @@
-"""H8a: the heterogeneity penalty vs q — the Ising→Kuramoto dial.
+"""H8a: the heterogeneity penalty across the Ising-to-clock/XY state dial.
 
 For each q in Q_GRID, on scale-free N=196:
   Phase 1 (step 0, per q): unclamped clock model across a temperature grid;
-    Tc(q) = where the Kuramoto order parameter |<e^{i·theta}>| crosses 0.5.
-    Tc moves with q, so every q gets its own calibration — the step-0 lesson.
+    The finite-graph ordering crossover is where |<e^{i·theta}>| crosses 0.5.
+    It moves with q, so every q gets its own operating-point calibration.
   Phase 2: fid vs carrier fraction at T = 1.15*Tc(q), random vs degree
     placement, N_SEEDS seeds. The heterogeneity penalty is the degree-minus-
     random fidelity gap; H8a predicts it shrinks as q grows.
 
 q=2 is a strict Ising regression gate (clock_sweep reduces to Glauber, and
 the fractions/protocol match ensemble_placement.csv).
+
+As q grows this model approaches an equilibrium XY state space. It does not
+become generic Kuramoto dynamics, which also include natural frequencies and
+nonequilibrium phase evolution.
 
 Writes data/ensemble_clock.csv.
 """
@@ -50,7 +54,7 @@ def locate_tc(G, q):
     rows = [(T, spontaneous_order(G, q, T, seed=0)) for T in T_SCAN]
     crossing = next((T for T, m in rows if m < 0.5), T_SCAN[-1])
     curve = "  ".join(f"{m:.2f}" for _, m in rows)
-    print(f"  q={q:2d}  |m| over T=1..10: {curve}   ->  Tc ~ {crossing:.1f}")
+    print(f"  q={q:2d}  |m| over T=1..10: {curve}   ->  crossover ~ {crossing:.1f}")
     return crossing
 
 
@@ -66,14 +70,14 @@ def one_cell(G, q, T, frac, strat, seed):
 
 def main():
     rows = []
-    print("=== step 0 per q: Tc(q) on scale_free (seed-0 graph) ===")
+    print("=== step 0 per q: finite-graph ordering crossover (seed-0 graph) ===")
     G0 = dtm.make_graph("scale_free", N, seed=0)
     tc = {q: locate_tc(G0, q) for q in Q_GRID}
 
-    print(f"\n=== fid vs fraction at 1.15*Tc(q), {N_SEEDS} seeds ===")
+    print(f"\n=== fid vs fraction at 1.15*crossover(q), {N_SEEDS} seeds ===")
     for q in Q_GRID:
         T = round(TC_SAFETY * tc[q], 2)
-        print(f"\nq={q}  (Tc~{tc[q]:.1f} -> T={T})")
+        print(f"\nq={q}  (crossover~{tc[q]:.1f} -> T={T})")
         print("strategy  " + "  ".join(f"{f:10.3f}" for f in FRACTIONS))
         gaps = []
         for strat in ("random", "degree"):

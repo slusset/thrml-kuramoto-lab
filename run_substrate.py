@@ -1,4 +1,4 @@
-"""The substrate-invariance test: do thresholds TRACK across substrates?
+"""Matched-condition comparison: do operational thresholds track by topology?
 
 For each (topology, placement) condition, the SAME graph instance and the
 SAME carrier sets (matched RNG) are run through two entirely different
@@ -9,9 +9,9 @@ physics:
             main.py on the ring)
   Gibbs     block-Gibbs relaxation of the clamped Ising EBM (this repo)
 
-If h_c moves in the same direction, with the same ordering of conditions,
-under both dynamics, the topology -- not the substrate -- owns the
-threshold. That is the substrate-invariance claim, tested.
+If h_c moves in the same direction under both dynamics, the result supports a
+cross-model topology hypothesis. A four-condition, single-instance comparison
+does not establish substrate invariance or assign ownership of the threshold.
 
 Thresholds are kinetic (fixed horizons: oracle 700 post-perturbation
 steps, PGM 300 sweeps) and single-instance (seed 7) by design: matched
@@ -91,8 +91,8 @@ def main() -> None:
         hk = hc_kuramoto(topo, place)
         hg = hc_gibbs(topo, place)
         print(f"{topo + ' / ' + place:<24}{fmt(hk):>14}{fmt(hg):>12}")
-    print("\nread: same ordering across rows in both columns = the topology")
-    print("owns the threshold; the substrate only sets the scale.")
+    print("\nread: matching row order supports qualitative cross-model")
+    print("robustness; it does not establish substrate invariance.")
 
 
 if __name__ == "__main__":

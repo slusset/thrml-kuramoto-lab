@@ -1,12 +1,13 @@
-"""Step 0 for dtm_col_infl_clamping: locate each topology's critical temperature.
+"""Locate a finite-graph ordering crossover for each topology.
 
 Phase 1 — for each topology, run the Glauber field with ZERO clamps across a
 temperature grid and measure spontaneous order:
     <|m|>  — magnetization (order parameter)
     chi    — susceptibility N*(<m^2> - <|m|>^2)/T  (peaks near Tc)
-Tc is estimated as the susceptibility peak; the |m|=0.5 crossing is printed as
-a cross-check. Any carrier experiment must sit ABOVE this point, or spontaneous
-ordering masquerades as a carrier effect (the saturation seen on 2026-07-03).
+The operating crossover is estimated from the |m|=0.5 crossing; susceptibility
+is printed as a diagnostic. This is a pseudocritical calibration for the finite
+graphs, not a thermodynamic critical-temperature estimate. Carrier experiments
+must operate above it if the intended regime is ordering from disorder.
 
 Phase 2 — rerun the placement sweep (random/degree/ci) at T = TC_SAFETY * Tc
 per topology, fixed B*J/T, so fidelity is carrier-driven and placements can
@@ -61,7 +62,7 @@ def locate_tc(N=196):
         print("   T      <|m|>    chi")
         for T, m, chi in rows:
             print(f"  {T:5.2f}   {m:5.3f}   {chi:7.2f}")
-        print(f"  Tc estimate: |m| crosses 0.5 at T={crossing:.2f}"
+        print(f"  ordering crossover: |m| crosses 0.5 at T={crossing:.2f}"
               f"   (chi peak at T={chi_peak_T:.2f}, diagnostic)")
     return tc
 
@@ -89,5 +90,5 @@ def calibrated_sweep(tc, N=196, ratio=2.0):
 
 if __name__ == "__main__":
     tc = locate_tc()
-    print("\nTc estimates:", {k: round(v, 2) for k, v in tc.items()})
+    print("\nfinite-graph ordering crossovers:", {k: round(v, 2) for k, v in tc.items()})
     calibrated_sweep(tc)

@@ -14,8 +14,8 @@ Training runs at beta = 1/T_EVAL, so learned weights are in the same units
 as Hebb weights and both are evaluated with the identical numpy Glauber
 harness (dtm.sample_equilibrium(weights=...)) used for H5/H6.
 
-H7a: at P=1, learned couplings percolate at least as cheaply as Hebb
-     (fid vs carrier fraction, degree placement).
+H7a: at P=1, learned couplings reach the target-overlap criterion with no more
+     pinned nodes than Hebb (over the tested fraction grid, degree placement).
 H7b: learning pushes the capacity knee to higher P (it can decorrelate
      interference; Hebb just superposes).
 H7c: does learning restore r_struct's tracking domain at higher P?

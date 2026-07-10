@@ -3,12 +3,13 @@
 Phase A  lock: carriers clamped to the OLD target (+1). The lattice relaxes
          into a coherent state aligned with it.
 Phase B  the purpose moves: clamp values flip to the NEW target (-1), chain
-         continues from where phase A left off. Does the flip percolate?
+         continues from where phase A left off. Does pinning drive a reversal
+         within the observation horizon?
 
 Scores per recorded sample (free nodes only):
-  homeostatic  = mean s_i s_j over free-free edges   (locked? target-blind)
-  teleological = mean s_i * target                   (locked ON target?)
-  GAP          = homeostatic - teleological
+  local correlation (`hom`) = mean s_i s_j over free-free edges (target-blind)
+  target overlap (`tel`)     = mean s_i * target
+  GAP                        = local correlation - target overlap
 """
 
 import dataclasses
@@ -121,16 +122,16 @@ def sweep(
     """h-sweep printing the oracle's table. Returns (h, hom, tel, gap) rows."""
     rows = []
     if verbose:
-        print(f"{'h':>5} {'homeostatic':>12} {'teleological':>13} {'GAP':>8}   regime")
-        print("-" * 60)
+        print(f"{'h':>5} {'local_corr':>12} {'target_overlap':>14} {'GAP':>8}   regime")
+        print("-" * 62)
     for h in hs:
         spec = dataclasses.replace(base, h=float(h))
         hom, tel, gap = run_experiment(spec, **run_kwargs).summary()
         rows.append((float(h), hom, tel, gap))
         if verbose:
             regime = (
-                "FROZEN: locked, off-target" if gap > 0.5
-                else "EDGE: self-corrects" if tel > 0.6
+                "METASTABLE: ordered, off-target" if gap > 0.5
+                else "REVERSED: target-aligned" if tel > 0.6
                 else "transitional"
             )
             print(f"{h:>5.2f} {hom:>12.3f} {tel:>13.3f} {gap:>8.3f}   {regime}")
@@ -138,7 +139,7 @@ def sweep(
 
 
 def critical_h(rows, cross: float = 0.6) -> float | None:
-    """First h where teleological fidelity crosses `cross` (oracle's scan)."""
+    """First sampled h where target overlap crosses the operational criterion."""
     prev = None
     for h, _, tel, _ in rows:
         if prev is not None and prev < cross <= tel:

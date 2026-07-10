@@ -1,7 +1,7 @@
 [project]
 name = "thrml-kuramoto-lab"
 version = "0.1.0"
-description = "Carrier-fraction percolation experiment re-expressed as a clamped PGM in THRML (JAX block Gibbs)."
+description = "Sparse pinning, metastable reversal, and associative-recall experiments in THRML and related network models."
 requires-python = ">=3.10"
 dependencies = [
     "thrml",

@@ -2,8 +2,8 @@
 
   seeds   does h_c wobble across carrier placements / RNG streams?
   equil   is the threshold stable when Gibbs steps double? (mixing check)
-  size    does the transition SHARPEN as N grows? (real transition vs
-          sampler artifact -- finite-size scaling, coarse version)
+  size    how does the finite-horizon crossover change with N? (coarse
+          finite-size diagnostic, not a thermodynamic scaling analysis)
 
 Usage:
     uv run python run_rigor.py seeds
@@ -55,9 +55,9 @@ def check_size() -> None:
     for n in ns:
         row = [cell(dataclasses.replace(BASE, n=n, h=k / n)) for k in ks]
         print(f"{n:>5}" + "".join(f"{t:>8.2f}" for t in row))
-    print("\nread: in h=k/N units a sharpening transition means the jump")
-    print("happens at a k that grows slower than N (h_c shrinking) with a")
-    print("steeper rise. A flat/blurry jump at all N = sampler artifact.")
+    print("\nread: compare both pin count and pin density across N. This coarse")
+    print("diagnostic can reveal horizon or size sensitivity, but cannot by")
+    print("itself distinguish a thermodynamic transition from finite-size kinetics.")
 
 
 if __name__ == "__main__":

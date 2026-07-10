@@ -10,11 +10,11 @@ Correspondence with homeostasis_telos/main.py (the oracle):
   the target moves (novel perturb.)    ->  flip the clamp values mid-run
   holographic depth h                  ->  fraction of nodes clamped
 
-The honest-failure rule carries over: the homeostatic score is neighbor
-agreement and NEVER references the target; the teleological score is
-alignment with the (moved) target. Below the critical h the free lattice
-sits metastably in the old state -- locked, off-target (FROZEN). Above it
-the clamped carriers nucleate the flip and intent percolates.
+The target-blind/target-relative distinction carries over: the local
+correlation score NEVER references the target, while target overlap measures
+alignment with the moved reference. Below an operational, horizon-dependent
+pinning threshold the free lattice remains metastably in the old state. Above
+it, the clamped nodes can nucleate a reversal within the observation window.
 """
 
 from dataclasses import dataclass, field
@@ -29,7 +29,7 @@ from .topology import build_edges
 
 @dataclass(frozen=True)
 class RingSpec:
-    """Knobs of the experiment. `h` is the honest knob, same as the oracle."""
+    """Knobs of the experiment; `h` is the fraction of externally pinned nodes."""
 
     n: int = 120          # oracle N
     horizon: int = 6      # oracle delay-bounded neighborhood (ring/small_world)

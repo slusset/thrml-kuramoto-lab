@@ -1,15 +1,13 @@
-"""Connectivity graphs for the substrate-invariance experiment.
+"""Connectivity graphs for matched-condition model comparisons.
 
-The claim under test: the *constant* h_c moves between substrates, but the
-*shape* (sharp threshold, sparse sufficiency) tracks graph structure the
-same way in both. So the topology is the independent variable:
+The hypothesis under test is that the ordering of control difficulty across
+topologies is qualitatively similar under oscillator and spin dynamics, even
+when their operational thresholds differ.
 
   ring        the oracle's graph -- neighbors within +/- horizon
-  small_world ring with each edge rewired with prob p (Watts-Strogatz-ish);
-              shortcuts should drop h_c -- percolation loves shortcuts
-  scale_free  preferential attachment (Barabasi-Albert); hubs should drop
-              h_c further, and make carrier PLACEMENT matter (clamp a hub
-              vs clamp a leaf -- pinning-control territory)
+  small_world ring with each edge rewired with prob p (Watts-Strogatz-ish)
+  scale_free  preferential-attachment graph used to test whether pinning
+              high-degree nodes differs from pinning peripheral nodes
 
 All builders return a list of unordered index pairs, each pair once, no
 self-loops, no duplicates -- what model.build() expects.
@@ -51,7 +49,7 @@ def small_world(
 
 
 def scale_free(n: int, m: int = 6, seed: int = 7) -> list[tuple[int, int]]:
-    """Barabasi-Albert preferential attachment: each new node brings m edges.
+    """Preferential-attachment construction: each new node brings m edges.
 
     m=6 roughly matches the ring's mean degree (2*horizon = 12) so the
     coupling budget stays comparable. Expect hubs; expect h_c to depend on
@@ -59,7 +57,6 @@ def scale_free(n: int, m: int = 6, seed: int = 7) -> list[tuple[int, int]]:
     """
     rng = np.random.default_rng(seed)
     edges: set[frozenset] = set()
-    targets = list(range(m))  # seed clique-ish core
     repeated: list[int] = list(range(m))
     for v in range(m, n):
         chosen: set[int] = set()
