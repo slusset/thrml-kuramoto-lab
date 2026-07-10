@@ -4,6 +4,10 @@ This document defines the lab's models, protocols, measurements, and naming
 conventions. It separates standard technical terms from project metaphors and
 sets the minimum conditions that should accompany a reported result.
 
+The motivation and architectural interpretation of these models are documented
+separately in [`RESEARCH_PROGRAM.md`](RESEARCH_PROGRAM.md); the runnable
+experiment map is in [`EXPERIMENT_CATALOG.md`](EXPERIMENT_CATALOG.md).
+
 ## 1. System vocabulary
 
 ### Oscillator population

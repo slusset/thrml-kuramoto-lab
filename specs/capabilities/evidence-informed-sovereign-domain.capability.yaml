@@ -1,0 +1,13 @@
+id: evidence-informed-sovereign-domain
+type: capability
+description: >-
+  Use bounded simulation evidence to formulate and evaluate reversible
+  sovereign-domain architecture decisions without confusing internal
+  coherence, external telos alignment, or metaphor with real-world proof.
+scope:
+  personas:
+    - specs/personas/sovereign-domain-architect.md
+  journeys:
+    - specs/journeys/evaluate-sovereign-domain-decision.md
+  stories:
+    - specs/stories/research/trace-experiment-to-decision.md

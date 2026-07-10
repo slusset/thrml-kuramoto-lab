@@ -26,6 +26,25 @@ pacemaker nodes can synchronize an initially incoherent Kuramoto population—
 remains a next experiment. Most current results concern spin and clock models
 with externally pinned nodes.
 
+## Architectural motivation
+
+The lab was inspired by thinking about Dyson swarms and Domain-Driven Design:
+many autonomous, internally coherent units participating in a larger system
+without requiring centralized micromanagement. The architectural analogue is a
+**sovereign domain** that owns its model, reasoning, data lifecycle, deployable
+configuration, operations, and declared boundaries while remaining accountable
+to shared clinical constraints and externally observed outcomes.
+
+That framing makes internal coherence and external telos alignment separate
+concerns. A domain can be stable and consistent while serving a stale or wrong
+purpose; it can also be externally correct but too incoherent to sustain its
+behavior. The experiments are simplified probes of those tradeoffs, not proof
+that organizations or clinical systems literally behave like spins.
+
+See [Research program: coherent domains in a shared
+field](docs/RESEARCH_PROGRAM.md) for the full rationale and the mapping from
+experimental findings to reversible architecture decisions.
+
 ## Experimental regimes
 
 These protocols answer different questions and should not share an
@@ -133,12 +152,21 @@ uv run jupyter lab notebooks/01_carrier_fraction_clamped_pgm.ipynb
 
 ## Documentation
 
+- [Research program](docs/RESEARCH_PROGRAM.md) — Dyson-swarm inspiration,
+  homeostasis/telos distinction, sovereign-domain definition, and architecture
+  decision implications.
+- [Experiment catalog](docs/EXPERIMENT_CATALOG.md) — conceptual run order and
+  traceability from research question to scripts, data, and next gates.
 - [RESULTS.md](RESULTS.md) — current integrated findings, limitations, and next
   falsification tests.
 - [Concepts and methods](docs/CONCEPTS.md) — canonical terminology, protocol
   definitions, metrics, and claim boundaries.
+- [Project structure roadmap](docs/PROJECT_STRUCTURE.md) — incremental path
+  from exploratory scripts to reusable models, manifests, and regression tests.
 - [Experiment log](docs/EXPERIMENT_LOG.md) — the original chronological README
   narrative, preserved as the detailed lab record.
+- [`specs/`](specs/) — traceable persona, decision journey, story, and
+  capability for translating experiment evidence into architecture pilots.
 - [`integrations/`](integrations/) — reflective and cross-project integration
   notes; these are context, not numerical evidence.
 
@@ -154,7 +182,8 @@ uv run jupyter lab notebooks/01_carrier_fraction_clamped_pgm.ipynb
 ├── run_*.py                  # reproducible experiment entry points
 ├── data/                     # generated CSV evidence and master-curve plot
 ├── notebooks/                # exploratory notebook interface
-├── docs/                     # concepts and chronological experiment record
+├── docs/                     # rationale, concepts, catalog, results history
+├── specs/                    # traceable architecture decision narrative
 └── integrations/             # reflective integration notes
 ```
 

@@ -23,6 +23,9 @@ Evidence labels used below:
   not a universal law.
 
 See [`docs/CONCEPTS.md`](docs/CONCEPTS.md) for definitions and reporting rules.
+Architectural interpretations are kept separately in
+[`docs/RESEARCH_PROGRAM.md`](docs/RESEARCH_PROGRAM.md) so they remain traceable
+to, but distinguishable from, the numerical evidence.
 
 ## 1. Metastable reversal
 
